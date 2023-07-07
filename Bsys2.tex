@@ -507,11 +507,11 @@ else
 		\item Prozess P 1 sendet Nachrichten an eine Queue Q: send(Q, message)
 		\item Prozess P 2 empfängt Nachrichten aus Q: receive (Q, message)
 	\end{itemize} Beide müssen die gleiche Mailbox kennen. Der \textbf{Lebenszyklus der Queue} wenn sie einem Prozess gehört ist bis zum Ende des Prozesses. Gehört sie dem OS dann existiert diese unabhängig von einem Prozess. Die \textbf{Synchronisation} kann blockierend und nicht-blockierend sein. Bei einem \textbf{Rendezvous} sind Empfang und Versand blockierend und das OS kann direkt vom Senderprozess in den Empfänger kopieren (Spart eine Kopieroperation)\\
-	\textbf{Pufferung}
+	\textbf{Pufferungsmöglichkeiten}
 	\begin{enumerate} [noitemsep, topsep=0pt, leftmargin=*]
 		\item Keine, Queue-Länge ist 0, Sender muss blockieren bis Nachricht angekommen ist
 		\item Beschränkte, Maximal n Nachrichten können gespeichert werden, Sender blockiert wenn Queue voll
-		\item Ubeschränkte
+		\item Unbeschränkte
 	\end{enumerate}
 	Bei machen Systemen haben Nachrichten \textbf{Prioritäten}, der Empfänger holt dann immer die Nachricht zuerst mit der höchsten Prio.\\
 	
@@ -543,7 +543,7 @@ else
 	
 	\includegraphics[scale=0.225]{UTF-16.png}%TODO noch anschauen
 
-	\textbf{ext2} Begriffe: \underline{Partition} (Teil des Datenträgers, wird selbst wie Datenträter behandelt) \underline{Volume} (Ein Datenträger/Partition davon) \underline{Sektor} (Kleinste mögliche Untereinheit eines Volumes bis 4KB, Enthält Header, Daten und Error-Correction-Codes) \underline{Format} (Layout der logischen Struktur des Datenträgers)\\
+	\textbf{ext2} Begriffe: \underline{Partition} (Teil des Datenträgers, wird selbst wie Datenträger behandelt) \underline{Volume} (Ein Datenträger/Partition davon) \underline{Sektor} (Kleinste mögliche Untereinheit eines Volumes bis 4KB, Enthält Header, Daten und Error-Correction-Codes) \underline{Format} (Layout der logischen Struktur des Datenträgers)\\
 	
 	In einem \textbf{Block} sind mehrere Sektoren (1,2 oder 4KB). Volume ist in Blöcke aufgeteilt. Speicher wird nur in Form von Blöcken alloziert. Ein Block enthält nur Daten einer einzigen Datei.
 	\begin{itemize} [noitemsep, topsep=0pt, leftmargin=*]
@@ -551,11 +551,36 @@ else
 		\item \textbf{Physische} Blocknummer: Tatsächliche Blocknummer auf dem Volume
 	\end{itemize}
 	\vspace{5pt}
-	Ein \textbf{Inode} ist die Bschreibung einer Datei, enthält alle Metadaten und hat Fixe Grösse je Volume: Zweierpotenz, mind. 128 Byte, max. 1 Block
+	Ein \textbf{Inode} ist die Bschreibung einer Datei, enthält alle Metadaten und hat Fixe Grösse je Volume: Zweierpotenz, mind. 128 Byte, max. 1 Block. Der Inode enthält ein Array mit 15 Einträgen zu je 32 Bit: 12 Blocknummern für die ersten 12 Blöcke einer Datei, 1 Blocknummer des indirekten Blocks, 1 des doppelt ind., 1 des dreifach ind. Ein \textbf{Indirekter} Block verweist auf eine weitere Liste von Blocks. Der doppelt indirekte Block verweist auf eine liste von indirekten Blöcken etc.. Die theoretisch maximale Dateigrösse wäre damit 4TB, durch 32-Bit-Counter jedoch auf 2TB beschränkt\\
+	
+	Ein Volume wird in \textbf{Blockgruppen unterteilt}:
+	
+	\includegraphics[scale=0.238]{Blockgruppe.png} Ein \textbf{Superblock} enthält alle Metadaten über das Volume (Anzahlen: Inodes frei und gesamt, Blöcke frei und gesamt, reservierte Blöcke, Bytes je Block, Bytes je Inode, Blöcke je Gruppe, Inodes je Gruppe,...). Der \textbf{Gruppendeskriptor} is eine 32 Byte Beschreibung einer Blockgruppe (Blocknummern, Anz. freier Inodes, Blöcke und Verzeichnissen). Die \textbf{Gruppendeskriptortabelle} beinhaltet ein Gruppendeskriptor pro Gruppe. Wenn das \textbf{Sparse Superblock} feature aktiviert ist, dann werden Kopien des Superblocks nur noch in Blockgruppe 0 und 1 sowie allen reinen Potenzen von 3, 5 oder 7 gehalten -> somit viel weniger Superblock Kopien.\\
+	Bei \textbf{File-Holes} wird ein Eintrag auf einen Block auf 0 gesetzt, heisst das, dass der Block nur Nullen enthält. Wird nicht alloziert. \textbf{Verzeichnisse} sind wie Inodes.
 	
 	\vspace{5pt}
 	\rule{\linewidth}{0.4pt}
 	\textbf{[ext4]}\\
+	
+	In ext4 sind wichtige Datenstrukturen \textbf{vergrössert}: Inodes 256 Byte statt 128, Gruppendeskriptor 64 Byte statt 32 und Blockgrösse bis 64 KB.
+	
+	\textbf{Extents} sind Beschreibungen von Intervallen physisch konsekutiver Blöcke. Ein extent umfasst 12 Byte. Für mehr als 4 Extents braucht man einen zusätzlichen Block: den Extent Tree Header.
+	Ein \textbf{Index Node} spezifiziert Blöcke die Extents enthalten. Benötigt man mehr als 4*340 Extents muss man Blöcke von Index-Nodes einführen.
+	
+	\textbf{Extent Trees} besteht aus Index-Blöcken. Trees haben einen Tree-Header der Referenzen auf Kind-Knoten enthält.
+	
+	\includegraphics[scale=0.22]{Extent-Trees.png} %TODO kann auch weggelassen werden
+	\vspace{5pt}\\
+	\textbf{Journaling} Wenn das System beim erweitern von Dateien unterbrochen wird, kann dies zu Inkonsistenzen führen (Crash/Stromausfall). Journaling macht die Prüfung von Inkonsistenzen schneller. Nur die Metadaten die noch im Journal referenziert sind müssen überprüft werden, nicht alle.
+	Das \textbf{Journal} ist eine reservierte Datei, in die Daten relativ schnell geschrieben werden können. Wenn Daten geschrieben werden sollen, dass werden diese zuerst als Transaktion ins Journal geschrieben (Journaling). Erst danach an die endgültige Position. Nach \textbf{Commit} wird der Journaleintrag entfernt. Beim Neustart können die Journaleinträge überprüft werden.\\
+	\textbf{Modi:}
+	\begin{itemize} [noitemsep, topsep=0pt, leftmargin=*]
+		\item \underline{(Full) Journal:} Metadaten + Datei-Inhalte kommen ins Journal. Maximale Datensicherheit, langsam
+		\item \underline{Ordered:} Nur Metadaten kommen ins Journal. Commit wird immer vor Commit geschrieben.
+		\item \underline{Writeback:} Nur Metadaten im Journal. Commit und Schreiben beliebige Reihenfolge. Sehr schnell. Dateien können Datenmüll enthalten
+	\end{itemize}
+	\textbf{Ext2} ist schlank und leistungsfähig. Einfach zu implementieren Mächtiger als FAT, aber weniger mächtig als NTFS.\\
+	\textbf{Ext4} fügt wichtige Features hinzu. Journaling, Effizientere Verwaltung grosser Verzeichnisse und Dateien.
 	
 	\vspace{5pt}
 	\rule{\linewidth}{0.4pt}
