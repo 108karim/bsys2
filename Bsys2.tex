@@ -31,18 +31,21 @@
 \begin{document}
 \begin{multicols*}{5}
 	\textbf{[Betriebssystem API]}\\
-	\textbf{ProzessorPrivilege Level}
+	\textbf{Prozessor Privilege Level}
 	Kernel Mode, User Mode. OS läuft üblicherweise im Kernel Mode aber auch hier werden bestimmte Prozesse im User Mode ausgeführt.\\\\
 	\textbf{Micro Kernel}
 	Kernelfunktionalität auf Minimum reduziert. Nur Kritische teile des Kernels laufen im Kernel-Mode. Vorteil: Stabilität, Analysierbarkeit. Nachteil: Performance-Einussen durch häufigen Mode-Wechsel.\\\\
 	\textbf{Monolithische Kernel}
-	Meiste OS-Kernel sind monolithisch. Viel Funktionalität auch im Usermode -> weniger Mode Wechsel dafür weniger Schutz vor Programmierfehlern.
+	Meiste OS-Kernel sind monolithisch. Viel Funktionalität auch im Usermode -> weniger Mode Wechsel dafür weniger Schutz vor Programmierfehlern.\\
+	
 	\textbf{Unikernel}
 	Kernfunktionalität als Library. Keine Trennung Kernel-/User-Mode. Sehr Minimal und Kompakt. Nur ein Programm läuft.\\
+	
 	\textbf{Programmargumente}
 		
 	\includegraphics[scale=0.24]{Programmargumente.png}
-	\textbf{ABI-Kompatibilität} Linux-Kernel sind nicht binär-kompatibel Z.B. Kernel A: exit hat Code 60 und erwartet Exit-Code in Register al Z.B. Kernel B: exit hat Code 55 und erwartet Exit-Code in Register al
+	\textbf{ABI-Kompatibilität} Linux-Kernel sind nicht binär-kompatibel z.B. Kernel A: exit hat Code 60 und erwartet Exit-Code in Register al Kernel B: exit hat Code 55 und erwartet Exit-Code in Register al\\
+	
 	\textbf{Umgebungsvariablen} werden implizit bereitgestellt. Eignet sich für Informationen werlche immer gleich sind.
 	\begin{lstlisting}
 PATH=/usr/home
@@ -51,11 +54,12 @@ PATH=/usr/home
 	\textbf{Abfragen} \texttt{char *value = getenv("PATH");}
 	\textbf{Setzen} \texttt{int ret = setenv("HOME", "/usr/home", 1);}
 	\textbf{Entfernen} \texttt{int ret = unsetenv("HOME");}
-	\textbf{Hinzufügen} \texttt{int ret = putenv("HOME=/usr/home");}\\\\
+	\textbf{Hinzufügen} \texttt{int ret = putenv("HOME=/usr/home");}
+	\vspace{5pt}\\
 	\rule{\linewidth}{0.4pt}
 	\textbf{[Filesystem API]}\\
 	Datei besteht aus Daten und Metadaten.
-	\textbf{Dateitypen} haben für FS und OS fast keine Relevanz. Es liegt an der Applikation den Datentyp richtig zu bestimmen, diese müssen die Daten validieren.\\\\
+	\textbf{Dateitypen} haben für FS und OS fast keine Relevanz. Es liegt an der Applikation den Datentyp richtig zu bestimmen, diese muss die Daten validieren.\\\\
 	\textbf{Verzeichnis Begriffe}
 	\begin{itemize}[noitemsep, topsep=0pt, leftmargin=*]
 		\item Verzeichnis: Liste die Dateien oder Verzeichnisse enhält. Als Datei realisiert
@@ -69,15 +73,17 @@ PATH=/usr/home
 		\item Realtiver Pfad beginnt nicht mit /
 		\item Kanonischer Pfad sind absolut ohne "." und ".."
 	\end{itemize}
-	Limitierungen sind in \texttt{<limits.h>} festgelegt\\
+	Limitierungen sind in \texttt{<limits.h>} festgelegt.\\
 	\textbf{Zugriffsrechte} \texttt{0740 oder rwxr-----} Owner hat alle Rechte, Gruppe nur Lesen, Andere keine
-	\textbf{POSIX-API} API für direkten, unformatierten Zugriff auf Inhalt der Datei.
+	\textbf{POSIX-API} API für direkten, unformatierten Zugriff auf Inhalt der Datei.\\
+	
 	\textbf{File Descriptor}
 		
 	\includegraphics[scale=0.2]{File_Descriptor.png}\\
 	Gilt immer nur innerhalt eines Prozesses. Tabelle mit allen geöffneten Dateien im Prozess zeigt auf globale Tabelle. Enthält Daten, um physische Datei (mit richtigem Treiber, Datenträger, etc) zu identifizieren.\\
 	% TODO API Methoden einfügen?!
-	\textbf{C-API} Unabhängig von Betriebssystem, Streambasiert, anderes Error-Handling\\\\
+	\textbf{C-API} Unabhängig von Betriebssystem, Streambasiert, anderes Error-Handling.
+	\vspace{5pt}\\
 	\rule{\linewidth}{0.4pt}
 	\textbf{[Prozesse]}\\
 	Umfasst das Abbild eines Programms im Hauptspeicher, die globalen Variablen des Programms, Speicher für Heap und Stack. 
@@ -88,9 +94,11 @@ PATH=/usr/home
 	\textbf{Process Control Block (PCB)} ist ein Speicher für alle Daten, die das OS benötigt, um die Ausführung des Prozesses ins Gesamtsystem zu integrieren, u.a.: ID, Parent ID, Zustands, Scheduling-Infos,...
 		
 	\includegraphics[scale=0.3]{PCB.png}\\
-	\textbf{Interrupts} dabei muss der Kontext des aktuellen Prozesses im PCB gesichert werden (context save). Gesichert wird: Register, Flags, Instruction Pointer, MMU-Konfiguration. Danach wird der \textbf{Interrupt-Handler} aufgerufen, dieser kann den Kontext komplett überschreiben, danach wird der Kontext des Prozesses aus dem PCB wiederhergestellt (context restore).\\\\
-	\textbf{Prozess erzeugen} Das OS muss 1. Einen Prozess erzeugen 2. Ein Programm in den Prozess laden
-	\textbf{Prozess-Hierarchie} Jeder Prozess hat 1 Parent und beliebig viele childs: \texttt{pstree} zum anzeigen\\\\
+	\textbf{Interrupts} dabei muss der Kontext des aktuellen Prozesses im PCB gesichert werden (context save). Gesichert wird: Register, Flags, Instruction Pointer, MMU-Konfiguration. Danach wird der \textbf{Interrupt-Handler} aufgerufen, dieser kann den Kontext komplett überschreiben, danach wird der Kontext des Prozesses aus dem PCB wiederhergestellt (context restore).\\
+	
+	\textbf{Prozess erzeugen} Das OS muss 1. Einen Prozess erzeugen 2. Ein Programm in den Prozess laden\\
+	\textbf{Prozess-Hierarchie} Jeder Prozess hat 1 Parent und beliebig viele childs: \texttt{pstree} zum anzeigen\\
+	
 	\textbf{Fork} Erzeugt exakte Kopie des Prozesses mit eigener Prozess-ID
 	\begin{itemize} [noitemsep, topsep=0pt, leftmargin=*]
 		\item Bei Erfolg: Gibt die Prozess-ID von C zurück (> 0)
@@ -115,10 +123,9 @@ void spawn_worker() {
 	\end{lstlisting}
 	\begin{itemize} [noitemsep, topsep=0pt, leftmargin=*]
 		\item \texttt{pid\_t wait (int *status)}: Unterbricht den aufrufenden Prozess und wartet bis einer seiner Child-Prozesse beendet wurde.
-		\item \texttt{pid\_t waitpid (pid\_t pid, int *status, int options)}: Gleich wie wait der pid bestimmt aber auf welchen prozess man warten will
-		\item \texttt{void exit (int code)}: Kann an jeder Stelle im Programm verwendet werden und bietet somit eine Alternative zum «Rücksprung» aus main
+		\item \texttt{pid\_t waitpid (pid\_t pid, int *status, int options)}: Gleich wie wait der pid bestimmt aber auf welchen Prozess man warten will.
+		\item \texttt{void exit (int code)}: Kann an jeder Stelle im Programm verwendet werden und bietet somit eine Alternative zum «Rücksprung» aus main.
 	\end{itemize}
-	\vspace{5pt}
 	\textbf{exec-Funktionen} Jede exec-Funktion ersetzt im gerade laufenden Prozess das Programmimage durch ein anderes Programmimage.\\\\
 	\textbf{Zusammenspiel}
 			
@@ -333,12 +340,10 @@ errno = 0;
 if (nice(i) == -1 && errno != 0) {
 	// Error
 } else {
-	// -1 is nice value
-}
-		
+	// -1 is nice value}
 	\end{lstlisting}
 	
-	\vspace{5pt}
+	\vspace{3pt}
 	\rule{\linewidth}{0.4pt}
 	\textbf{[Mutexe und Semaphoren]}\\\\
 	\textbf{Inkrementierung in C}
@@ -514,7 +519,6 @@ else
 		\item Unbeschränkte
 	\end{enumerate}
 	Bei machen Systemen haben Nachrichten \textbf{Prioritäten}, der Empfänger holt dann immer die Nachricht zuerst mit der höchsten Prio.\\
-	
 	Beim \textbf{Shared Memory} werden Frames des Hauptspeichers mehreren Prozessen zugänglich gemacht. Wenn man \textbf{Pointer} verwenden möchte, dann müssen diese Relativ zur Anfangsadresse sei.\\
 	
 	\textbf{Vergleich Message-Passing und Shared Memory} Shared Memory ist of der schneller zu realisierende Ansatz, Message Passing erfordert mehr Engineering-Aufwand. Message-Passing-Systeme liegen auf Mehr-Prozessor-Systemen häufig gleichauf und werden in Zukunft vermutlich sogar performanter als Shared-Memory-Systeme sein.\\
@@ -585,5 +589,27 @@ else
 	\vspace{5pt}
 	\rule{\linewidth}{0.4pt}
 	\textbf{[X-Window-System]}\\
+	
+	Der \textbf{Window Manager} dekoriert Top-Level Windows von Applikationen mit Komponenten  wie: Buttons zum Minimieren, Maximieren, Verändern der Grösse, Scrollbars, Titelleiste, usw.\\
+	
+	\textbf{Display} ist Rechner mit Tastatur, Zeigegerät, Bildschirm*en\\
+	\textbf{X Client} ist die Applikation die ein Display nutzen will\\
+	\textbf{X Server} ist der Softwareteil des XWS der ein Display ansteuert\\
+	\textbf{Xlib} ist das C Interface für das X Protocol \texttt{\#include <X11/Xlib.h>}\\
+	\textbf{X-Toolkits} ist eine Softwareschicht über Xlib, stellt z.B. Labels, Menus oder Buttons bereit.\\
+	
+	Damit ein \textbf{Display} verwendet werden kann muss eine Verbindung zu diesem aufgebaut werden: öffnen: \texttt{Display * XOpenDisplay (char *display\_name)}, schliessen: \texttt{void XCloseDisplay (Display *display)}.\\
+	\textbf{Window} auf einem Display erzeugen: \texttt{XCreateWindow}, \texttt{XDestroyWindow}. Nach dem erstellen wird ein Window noch nicht angezeigt, erst mit \texttt{XMapWindow (Display *, Window)}.\\
+	
+	Das \textbf{X Protocol} legt Formate für Nachrichten zwischen Client und Server fest. Es gibt vier Typen von Nachrichten: Request(ändere Farbe), Replies, Events(Mausklick), Errors.\\
+	
+	\textbf{X Event Handling} Der Client muss im voraus festlegen welche Ereignistypen er empfangen will, Selektion pro Fenster individuell.\\
+	
+	\textbf{Ressourcen} werden zur Reduktion des Netzverkehrs Server-Seitig gehalten. Ressourcen bsp.: Window, Pixmap, Colormap, Font,...\\
+	Fensterinhalte werden minimal \textbf{gepuffert} und müssen bei "Sichtbarwerden" neu gezeichnet werden. Optional kann der X Server die Inhalte der Fenster sichern.\\
+	
+	Der \textbf{close button} ist insofern speziell weil X nichts über die Spezielle Bedeutung dieses Elements weiss. Der Window Manager stellt den Button zu verfügung. Beim klicken darauf erfährt die Applikation davon über ein Protokoll das zwischen WM und Applikation definiert wurde.\\
+	Der WM sendet ein \texttt{ClientMessage} Event an App. Das Event enthält dann z.B. die Property \texttt{WM\_DELETE\_MESSAGE}. Im Fall des close buttons wird \texttt{WM\_DELETE\_WINDOW} geschickt.
+	
 \end{multicols*}
 \end{document}
